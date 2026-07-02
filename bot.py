@@ -11,22 +11,22 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cucina(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "🍽️ *Ecco a te l'elenco delle ricette da noi possedute!*\n\n"
-        "🥪 *Salato:*\n"
-        "• Chips /chips\n"
-        "• Hotdog /hotdog\n"
-        "• Pasta /pasta\n"
-        "• Hamburger /hamburger\n"
-        "• Nachos /nachos\n"
-        "• Wrap /wrap\n"
-        "• Uramaki /uramaki\n"
-        "• Sashimi /sashimi\n"
-        "• Nigiri /nigiri\n"
-        "• Hosomaki /hosomaki\n"
-        "• Tacos /tacos\n\n"
-        "🍰 *Dolci:*\n"
-        "• Torta /torta\n"
-        "• Macaron /macaron"
+        "🍽️ *Ecco a te l'elenco delle nostre ricette!*\n\n"
+        "🥪 *Salato:*\n\n"
+        "» Chips /chips\n\n"
+        "» Hotdog /hotdog\n\n"
+        "» Pasta /pasta\n\n"
+        "» Hamburger /hamburger\n\n"
+        "» Nachos /nachos\n\n"
+        "» Wrap /wrap\n\n"
+        "» Uramaki /uramaki\n\n"
+        "» Sashimi /sashimi\n\n"
+        "» Nigiri /nigiri\n\n"
+        "» Hosomaki /hosomaki\n\n"
+        "» Tacos /tacos\n\n"
+        "🍰 *Dolci:*\n\n"
+        "» Torta /torta\n\n"
+        "» Macaron /macaron"
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
@@ -35,10 +35,10 @@ async def cucina(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def chips(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "🍟 *Eccoti le chips:*\n\n"
-        "Patata > Tagliere > Chips x4\n"
+        "Patata x1> Tagliere > Chips x4\n"
         "Chips > Friggitrice > Chips Cotte\n\n"
-        "• Chips alla paprika:\n"
-        "Chips Cotte + Paprika > Chips alla Paprika x2\n\n"
+        "» Chips alla paprika:\n"
+        "Chips Cotte x1+ Paprika x1> Chips alla Paprika x2\n\n"
         "Da usare sul banco da lavoro."
     )
 
