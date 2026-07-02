@@ -42,15 +42,14 @@ async def chips(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Da usare sul banco da lavoro."
     )
 
-await update.message.reply_text(text, parse_mode="Markdown")
+    await update.message.reply_text(text, parse_mode="Markdown")
 
 
-
+# 👇 QUESTO DEVE STARE FUORI DA TUTTO
 app = Application.builder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("cucina", cucina))
 app.add_handler(CommandHandler("chips", chips))
 
-    
 app.run_polling()
