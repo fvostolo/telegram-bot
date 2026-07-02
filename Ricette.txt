@@ -1,0 +1,68 @@
+Chips 
+	alla paprika
+Hotdog
+	classico	
+	vegano (cercalo)
+Pasta
+	cacio e pepe
+	caviale
+	carbonara
+	amatriciana
+Hamburger
+	cheeseburger
+	carne
+Nachos
+	formaggio
+	paprika
+Wrap
+	cheese bacon
+Torta
+	cioccolato
+Uramaki
+	salmone
+	tonno
+	formaggio
+sashimi
+macaron
+	fragola
+	cioccolato
+	vaniglia
+	pistacchio
+	frutti di bosco
+	mirtilli
+nigiri
+	polpo
+	tropicale
+	salmone
+hosomaki
+	salmone
+	tonno
+tacos
+	carne
+	piccante
+
+
+AGGIUNTA COMANDI SU VS
+prima ctrl + s
+APRI TERMINALE
+git add .
+git commit -m "aggiunti comandi X E Y"
+git push
+
+async def pasta(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        ""
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+app.add_handler(CommandHandler("nachos", nachos))
+app.add_handler(CommandHandler("wrap", wrap))
+app.add_handler(CommandHandler("uramaki", uramaki))
+app.add_handler(CommandHandler("nigiri", nigiri))
+app.add_handler(CommandHandler("hosomaki", hosomaki))
+app.add_handler(CommandHandler("tacos", tacos))
+app.add_handler(CommandHandler("sashimi", sashimi))
+app.add_handler(CommandHandler("torta", torta))
+app.add_handler(CommandHandler("macaron", macaron))
