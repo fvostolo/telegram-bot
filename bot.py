@@ -61,7 +61,27 @@ async def hotdog(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def pasta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        ""
+        "🍝 *Ecco a te i vari tipi di pasta:\n\n"
+        "» Cacio e Pepe:\n"
+        "x2 Pecorino + x1 Pepe + x1 Spaghetti cotti › Padella  › x4 Spaghetti alla cacio e pepe\n\n"
+        "» Caviale:\n"
+        "x1 Pepe + x1 Caviale + x1 Spaghetti cotti  › Padella › x3 Pasta al caviale\n\n"
+        "» Carbonara:\n"
+        "x1 Pecorino + x1 Guanciale a dadini + x1 Tuorlo + x1 Spaghetti cotti › Padella > x4 Spaghetti alla carbonara\n\n"
+        "» Amatriciana:\n"
+        "x1 Sugo + x1 Pecorino + x1 Guanciale a dadini + x1 Spaghetti cotti › Padella > x4 Spaghetti all’amatriciana\n\n"
+        "Spaghetti cotti: si ottengono cucinando la pasta in padella con un mestolo."
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+async def hamburger(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🍔 *Ecco a te i vari hamburger:\n\n"
+        "» Cheeseburger:\n"
+        "x1 Pane per hamburger + x1 Hamburger di manzo + x1 Cheddar + x1 Bacon + x1 Pane per hamburger › Banco da lavoro  › x5 Cheeseburger con bacon\n\n"
+        "» Carne:\n"
+        "x1 Pane per hamburger + x1 Fetta di pomodoro + x1 Hamburger di manzo + x1 Cheddar + x1 Fetta di insalata + x1 Pane per hamburger › Banco da lavoro  › x6 Hamburger di carne"
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
@@ -75,6 +95,16 @@ app.add_handler(CommandHandler("cucina", cucina))
 app.add_handler(CommandHandler("chips", chips))
 app.add_handler(CommandHandler("hotdog", hotdog))
 app.add_handler(CommandHandler("pasta", pasta))
+app.add_handler(CommandHandler("hamburger", hamburger))
+app.add_handler(CommandHandler("nachos", nachos))
+app.add_handler(CommandHandler("wrap", wrap))
+app.add_handler(CommandHandler("uramaki", uramaki))
+app.add_handler(CommandHandler("nigiri", nigiri))
+app.add_handler(CommandHandler("hosomaki", hosomaki))
+app.add_handler(CommandHandler("tacos", tacos))
+app.add_handler(CommandHandler("sashimi", sashimi))
+app.add_handler(CommandHandler("torta", torta))
+app.add_handler(CommandHandler("macaron", macaron))
 
 app.run_polling()
 
