@@ -283,37 +283,37 @@ async def bottone_gioco(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 🎲 RISULTATO FINALE (CASINO SYSTEM)
     roll = random.randint(1, 100)
 
-if roll <= 50:
-    await msg.edit_text(
+    if roll <= 50:
+        await msg.edit_text(
         "🎰 RISULTATO FINALE\n\n"
         "😢 Non hai vinto questa volta.\n\n"
         "⏳ Riprova tra 10 minuti!"
+        )
+        return
+
+    elif roll <= 80:
+        premio = "🌿 1 bush"
+        rarita = "Comune"
+
+    elif roll <= 92:
+        premio = "🍱 1 stack di cibo fresco"
+        rarita = "Non comune"
+
+    elif roll <= 98:
+        premio = "👑 1 ingresso della manager sul server"
+        rarita = "Raro"
+
+    else:
+        premio = "🎟 1 fiches (offerta da Fvostolo)"
+        rarita = "Leggendario 💎"
+
+    await msg.edit_text(
+        f"🎰 RISULTATO FINALE\n\n"
+        f"🎉 Hai vinto!\n\n"
+        f"🏆 Premio: {premio}\n"
+        f"📊 Rarità: {rarita}\n\n"
+        f"⏳ Potrai giocare di nuovo tra 10 minuti."
     )
-    return
-
-elif roll <= 80:
-    premio = "🌿 1 bush"
-    rarita = "Comune"
-
-elif roll <= 92:
-    premio = "🍱 1 stack di cibo fresco"
-    rarita = "Non comune"
-
-elif roll <= 98:
-    premio = "👑 1 ingresso della manager sul server"
-    rarita = "Raro"
-
-else:
-    premio = "🎟 1 fiches (offerta da Fvostolo)"
-    rarita = "Leggendario 💎"
-
-await msg.edit_text(
-    f"🎰 RISULTATO FINALE\n\n"
-    f"🎉 Hai vinto!\n\n"
-    f"🏆 Premio: {premio}\n"
-    f"📊 Rarità: {rarita}\n\n"
-    f"⏳ Potrai giocare di nuovo tra 10 minuti."
-)
 
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
