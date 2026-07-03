@@ -1,9 +1,14 @@
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+import random
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackQueryHandler
+import time
+import asyncio
 import os
 
 TOKEN = os.getenv("TOKEN")
-
+cooldowns = {}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Ciao! Il bot funziona 😄")
@@ -213,6 +218,84 @@ async def culo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text, parse_mode="Markdown")
 
 
+async def gioca(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [
+        [InlineKeyboardButton("🎁 Apri il pacco", callback_data="gioco")]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_text(
+        "🎲 Premi il pulsante per tentare la fortuna!",
+        reply_markup=reply_markup
+    )
+
+async def bottone_gioco(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    user_id = query.from_user.id
+
+    await query.answer()
+
+    # 🧊 COOLDOWN 10 MINUTI
+    now = time.time()
+
+    if user_id in cooldowns:
+        last_time = cooldowns[user_id]
+        if now - last_time < 600:
+            remaining = int(600 - (now - last_time))
+            minutes = remaining // 60
+            seconds = remaining % 60
+
+            await query.edit_message_text(
+                f"⏳ Aspetta prima di giocare di nuovo!\n"
+                f"Riprova tra {minutes}m {seconds}s"
+            )
+            return
+
+    cooldowns[user_id] = now
+
+    # 🎰 ANIMAZIONE SLOT
+    slot_frames = [
+        "🎰 | 🍒 | 🍋 | 🔔",
+        "🎰 | 🍋 | 🔔 | 🍒",
+        "🎰 | 🔔 | 🍒 | 🍋",
+        "🎰 | 🍒 | 🍒 | 🍒",
+    ]
+
+    msg = await query.edit_message_text("🎰 Girando la slot...")
+
+    for frame in slot_frames:
+        await asyncio.sleep(0.7)
+        await msg.edit_text(f"🎰 SLOT MACHINE\n\n{frame}")
+
+    # 🎲 RISULTATO FINALE (CASINO SYSTEM)
+    roll = random.randint(1, 100)
+
+    if roll <= 60:
+        premio = "🌿 1 bush"
+        rarita = "Comune"
+
+    elif roll <= 85:
+        premio = "🍱 1 stack di cibo fresco"
+        rarita = "Non comune"
+
+    elif roll <= 97:
+        premio = "👑 1 ingresso della manager sul server"
+        rarita = "Raro"
+
+    else:
+        premio = "🎟 1 fiches (offerta da Fvostolo)"
+        rarita = "*Leggendario* 💎"
+
+    await msg.edit_text(
+        f"🎰 RISULTATO FINALE\n\n"
+        f"🏆 Premio: {premio}\n"
+        f"📊 Rarità: {rarita}\n\n"
+        f"⏳ Prossima giocata tra 10 minuti"
+    )
+
+
+
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
 app = Application.builder().token(TOKEN).build()
 
@@ -232,6 +315,8 @@ app.add_handler(CommandHandler("tacos", tacos))
 app.add_handler(CommandHandler("torta", torta))
 app.add_handler(CommandHandler("macaron", macaron))
 app.add_handler(CommandHandler("culo", culo))
+app.add_handler(CommandHandler("gioca", gioca))
+app.add_handler(CallbackQueryHandler(bottone_gioco))
 
 
 app.run_polling()
