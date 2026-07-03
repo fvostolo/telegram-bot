@@ -205,7 +205,12 @@ async def macaron(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text, parse_mode="Markdown")
 
+async def culo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "CULO"
+    )
 
+    await update.message.reply_text(text, parse_mode="Markdown")
 
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
@@ -226,6 +231,7 @@ app.add_handler(CommandHandler("sashimi", sashimi))
 app.add_handler(CommandHandler("tacos", tacos))
 app.add_handler(CommandHandler("torta", torta))
 app.add_handler(CommandHandler("macaron", macaron))
+app.add_handler(CommandHandler("culo", culo))
 
 
 app.run_polling()
