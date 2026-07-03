@@ -61,7 +61,7 @@ async def hotdog(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def pasta(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "🍝 *Ecco a te i vari tipi di pasta:\n\n"
+        "🍝 *Ecco a te i vari tipi di pasta:*\n\n"
         "» Cacio e Pepe:\n"
         "x2 Pecorino + x1 Pepe + x1 Spaghetti cotti › Padella  › x4 Spaghetti alla cacio e pepe\n\n"
         "» Caviale:\n"
@@ -77,7 +77,7 @@ async def pasta(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def hamburger(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
-        "🍔 *Ecco a te i vari hamburger:\n\n"
+        "🍔 *Ecco a te i vari hamburger:*\n\n"
         "» Cheeseburger:\n"
         "x1 Pane per hamburger + x1 Hamburger di manzo + x1 Cheddar + x1 Bacon + x1 Pane per hamburger › Banco da lavoro  › x5 Cheeseburger con bacon\n\n"
         "» Carne:\n"
@@ -85,6 +85,33 @@ async def hamburger(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
+
+async def nachos(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🧀 *Ecco a te i vari nachos:*\n\n"
+        "» Nachos al Formaggio:\n"
+        "x1 Nachos + x1 Spezia di jalapeno + x1 Cheddar › x3 Nachos al formaggio\n\n"
+        "» Nachos alla Paprika:\n"
+        "x1 Nachos + x1 Paprika + x1 Cheddar › Banco da lavoro › x3 Nachos alla paprika"
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+async def wrap(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🧀 *Ecco a te i nostri wrap:*\n\n"
+        "» Cheese Bacon Wrap:\n"
+        "x1 Piadina cotta + x1 Bacon cotto + x1 Cheddar + x1 Hamburger di carne spezzettato ›  4 Cheese Bacon Wrap\n\n"
+        "*Nota:* taglia l'hamburger di carne con un coltello sul tagliere per ottenere hamburger di carne spezzettato!\n\n"
+        "» Wrap Pesce:\n"
+        "x1 Piadina cotta + x1 Salsa tartara + x1 Merluzzo fritto spezzettato › Banco da lavoro > x3 Wrap di pesce\n\n"
+        "*Nota:* taglia il merluzzo fritto con un coltello sul tagliere per ottenere merluzzo fritto spezzettato!"
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+
 
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
@@ -96,6 +123,8 @@ app.add_handler(CommandHandler("chips", chips))
 app.add_handler(CommandHandler("hotdog", hotdog))
 app.add_handler(CommandHandler("pasta", pasta))
 app.add_handler(CommandHandler("hamburger", hamburger))
+app.add_handler(CommandHandler("nachos", nachos))
+app.add_handler(CommandHandler("wrap", wrap))
 
 app.run_polling()
 
