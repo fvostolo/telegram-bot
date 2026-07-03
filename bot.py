@@ -14,6 +14,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Ciao! Il bot funziona 😄")
 
 
+async def comandi(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "*Lista comandi disponibili*:\n\n"
+        "» /cucina\n"
+        "» /culo\n"
+        "» /gioca"
+    )
+
+    await update.message.reply_text(text)
+
+
+
 async def cucina(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         "🍽️ *Ecco a te l'elenco delle nostre ricette!*\n\n"
@@ -317,6 +329,7 @@ app.add_handler(CommandHandler("macaron", macaron))
 app.add_handler(CommandHandler("culo", culo))
 app.add_handler(CommandHandler("gioca", gioca))
 app.add_handler(CallbackQueryHandler(bottone_gioco))
+app.add_handler(CommandHandler("comandi", comandi))
 
 
 app.run_polling()
