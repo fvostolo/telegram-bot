@@ -296,7 +296,7 @@ async def bottone_gioco(update: Update, context: ContextTypes.DEFAULT_TYPE):
         rarita = "Comune"
 
     elif roll <= 92:
-        premio = "🍱 1 stack di cibo fresco"
+        premio = "🍱 1 stack di cibo fvesco"
         rarita = "Non comune"
 
     elif roll <= 98:
@@ -314,6 +314,7 @@ async def bottone_gioco(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📊 Rarità: {rarita}\n\n"
         f"⏳ Potrai giocare di nuovo tra 10 minuti."
     )
+
 
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
