@@ -316,6 +316,14 @@ async def bottone_gioco(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def bush(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "<b>Bush?!</b>\n\n"
+        '<a href="https://www.instagram.com/angelo_busc?utm_source=ig_web_button_share_sheet&utm_medium=copy_link">bush</a>'
+    )
+
+    await update.message.reply_text(text, parse_mode="HTML")
+
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
 app = Application.builder().token(TOKEN).build()
@@ -339,6 +347,7 @@ app.add_handler(CommandHandler("culo", culo))
 app.add_handler(CommandHandler("gioca", gioca))
 app.add_handler(CallbackQueryHandler(bottone_gioco))
 app.add_handler(CommandHandler("comandi", comandi))
+app.add_handler(CommandHandler("bush", bush))
 
 
 app.run_polling()
