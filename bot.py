@@ -19,7 +19,10 @@ async def comandi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "*Lista comandi disponibili*:\n\n"
         "» /cucina\n"
         "» /culo\n"
-        "» /gioca"
+        "» /gioca\n"
+        "» /bush\n"
+        "» /apri (prossimamente...)\n"
+        "» /collezione (prossimamente...)"
     )
 
     await update.message.reply_text(text)
