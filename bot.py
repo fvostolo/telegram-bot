@@ -40,9 +40,17 @@ async def cucina(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "» Sashimi /sashimi\n\n"
         "» Nigiri /nigiri\n\n"
         "» Hosomaki /hosomaki\n\n"
+        "» Temaki /temaki\n\n"
         "» Tacos /tacos\n\n"
+        "» Anelli di cipolla /anelli\n\n"
+        "» Insalate /insalate\n\n"
+        "» Cotoletta /cotoletta\n\n"
+        "» Tasty Basket e varie di Pollo /pollo\n\n"
         "🍰 *Dolci:*\n\n"
         "» Torta /torta\n\n"
+        "» Pancake /pancake\n\n"
+        "» Croissant /croissant\n\n"
+        "» Fragole /fragole\n\n"
         "» Macaron /macaron"
     )
 
@@ -98,7 +106,13 @@ async def hamburger(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "» Cheeseburger:\n"
         "x1 Pane per hamburger + x1 Hamburger di manzo + x1 Cheddar + x1 Bacon + x1 Pane per hamburger › Banco da lavoro  › x5 Cheeseburger con bacon\n\n"
         "» Carne:\n"
-        "x1 Pane per hamburger + x1 Fetta di pomodoro + x1 Hamburger di manzo + x1 Cheddar + x1 Fetta di insalata + x1 Pane per hamburger › Banco da lavoro  › x6 Hamburger di carne"
+        "x1 Pane per hamburger + x1 Fetta di pomodoro + x1 Hamburger di manzo + x1 Cheddar + x1 Fetta di insalata + x1 Pane per hamburger › Banco da lavoro  › x6 Hamburger di carne\n\n"
+        "» Vegano:\n"
+        "x1 Pane per hamburger + x1 Fetta di pomodoro + x1 Hamburger vegano + x1 Cheddar + x1 Fetta di insalata + x1 Pane per hamburger › Banco da lavoro  › x6 Hamburger vegano\n\n"
+        "» Pollo:\n"
+        "x1 Pane per hamburger + x1 Fetta di pomodoro + x1 Hamburger di pollo + x1 Cheddar + x1 Fetta di insalata + x1 Pane per hamburger › Banco da lavoro  › x6 Hamburger di pollo\n\n"
+        "» Pesce:\n"
+        "x1 Pane per hamburger + x1 Salsa tartara + x1 Merluzzo fritto + x1 Pane per hamburger > Banco da Lavoro > x4 Hamburger di pesce\n"
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
@@ -122,7 +136,12 @@ async def wrap(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⚠️*Nota:* taglia l'hamburger di carne con un coltello sul tagliere per ottenere hamburger di carne spezzettato!\n\n"
         "» Wrap Pesce:\n"
         "x1 Piadina cotta + x1 Salsa tartara + x1 Merluzzo fritto spezzettato › Banco da lavoro > x3 Wrap di pesce\n\n"
-        "⚠️*Nota:* taglia il merluzzo fritto con un coltello sul tagliere per ottenere merluzzo fritto spezzettato!"
+        "⚠️*Nota:* taglia il merluzzo fritto con un coltello sul tagliere per ottenere merluzzo fritto spezzettato!\n\n"
+        "» Wrap di pollo:\n"
+        "x1 Piadina cotta + x1 Fetta di pomodoro + x1 Fetta d’Insalata + x1 Cheddar + x1 Hamburger di Pollo spezzettato › Banco da lavoro › x5 Wrap di Pollo\n\n"
+        "⚠️*Nota:* taglia hamburger di pollo con un coltello sul tagliere per ottenere hamburger di pollo spezzettato!\n\n"
+        "» Wrap vegano:\n"
+        "x1 Piadina cotta + x1 Fetta di pomodoro + x1 Fetta d'insalata + x1 Cheddar + x1 Hamburger vegano spezzettato > Banco da lavoro > x5 Wrap vegano\n\n"
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
@@ -187,7 +206,80 @@ async def tacos(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "x1 Paprika + x1 Fetta d’insalata + x1 Hamburger di carne spezzettato + x1 Piadina cotta › Banco da lavoro › x4 Tacos di carne\n\n"
         "» Tacos piccante:\n"
         "x1 Spezia Piccante + x1 Fetta d’insalata + x1 Hamburger di carne spezzettato + x1 Piadina cotta › Banco da lavoro › x4 Tacos di carne\n\n"
+        "» Tacos piccante:\n"
+        "x1 Spezia piccante + x1 Salsa tartara + x1 Merluzzo fritto spezzettato + x1 Piadina cotta › Banco da lavoro › x4 Tacos di pesce\n\n"
         "⚠️*Nota:* taglia l'hamburger di carne con un coltello sul tagliere per ottenere hamburger di carne spezzettato!\n\n"
+        "⚠️*Nota 2:* taglia il merluzzo fritto con un coltello sul tagliere per ottenere merluzzo fritto spezzettato!\n\n"
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+async def anelli(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🧅 *Ecco a te gli anelli di cipolla:*\n\n"
+        "x1 Cipolla (tagliata) + x1 Sale (?) + x1 Pastella (?) > Banco da lavoro > x3 Anelli di cipolla\n"
+        "Friggere gli anelli di cipolla"
+        
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+
+async def insalate(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🥗 *Ecco a te le nostre insalate:*\n\n"
+        "» Insalata Mista:\n"
+        "x1 Papaya + x1 Maionese + x1 Fetta di Pomodoro + x2 Fetta d’insalata > Banco da Lavoro > x5 Insalata mista\n\n"
+
+        
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+async def cotoletta(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🥩 *Ecco a te le cotolette:*\n\n"
+        "• x1 pastella + x1 bistecca › x2 bistecca impanato\n"
+        "• x1 lattuga + x1 fetta di pomodoro + x1 bistecca impanato › x3 cotoletta"
+        
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+async def pollo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🐔 *Ecco a te alcune ricette di pollo:*\n\n"
+        "» Alette di Pollo:\n"
+        "Pollo › tagliere › 2x coscia pollo\n"
+        "Coscia pollo › alette di pollo\n"
+        "Aletta + salsa agrodolce + aletta › banco da lavoro › 2x alette crude\n"
+        "2x alette crude › forno › 2x Alette di pollo cotte\n\n"
+        "» Tasty Basket:\n"
+        "•x1 Pollo › Tagliere › x2 Coscia di pollo\n"
+        "•x1 Coscia di pollo › Tagliere › x1 Alette di pollo crude\n"
+        "•x1 Alette di pollo crude › Tagliere › x1 Nugget crudo\n"
+        "•x1 Nugget crudo + x1 Pastella + x1 Nugget crudo › Banco da Lavoro › x2 Nugget impanato\n"
+        "•x12 Nugget impanato › Friggitrice › x12 Nugget fritto\n"
+        "•x1 Sale + x3 Nugget fritto + x1 Maionese + x1 Ketchup › Banco da Lavoro › x6 Tasty basket\n"
+
+        
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+
+async def temaki(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🍙Ecco a te i nostri temaki:\n\n"
+        "» Temaki al Tonno:\n"
+        "x1 Riso bollito + x1 Alga essiccata + x1 Avocado (fetta) + x1 Sashimi Tonno > Banco da lavoro > x4 Temaki al tonno\n\n"
+        "» Temaki al Salmone\n"
+        "» x1 Riso bollito + x1 Alga essiccata + x1 (non so cosa sia, 3 filini gialli) + x1 Sashimi Tonno > Banco da lavoro > x4 Temaki al tonno\n\n"
+        "Per ottenere il *sashimi*, consulta /sashimi!"
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
@@ -197,9 +289,59 @@ async def torta(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🍰 *Ecco a te le nostre torte:*\n\n"
         "» Torta al cioccolato:\n"
         "x2 Cioccolato fondente + x1 Impasto per dolci › Banco da lavoro › x3 Torta al cioccolato\n\n"
+        "» Torta Saker:\n"
+        "x2 Cioccolato fondente + x1 Arancia + x1 Impasto per dolci › Banco da lavoro › x4 Saker\n\n"
+        "» Cheesecake:\n"
+        "x2 Fetta di fragola + x1 Formaggio spalmabile + x1 Impasto per dolci › Banco da lavoro › x4 Cheesecake\n"
+        "Le fette di fragola si ottengono tagliando fragola su tagliere.\n\n"
     )
 
     await update.message.reply_text(text, parse_mode="Markdown")
+
+
+
+async def pancake(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🥞 *Ecco a te i pancake:*\n\n"
+        "» Pancake generico:\n"
+        "x2 Impasto per dolci > Padella > x2 Pancake\n\n"
+        "» Pancake al caramello:\n"
+        "x1 Pancake + x1 Caramello + x1 Burro › Banco da lavoro › x3 Pancake al caramello\n\n"
+        "» Pancake al pistacchio:\n"
+        "x1 Pancake + x1 Pistacchio + x1 Panna (credo) › Banco da lavoro › x3 Pancake al pistacchio\n\n"
+        "» Pancake al cioccolato:\n"
+        "x1 Pancake + x1 Fragola + x1 Cioccolato Sciolto + x1 Panna (credo) › Banco da lavoro › x4 Pancake al cioccolato\n"
+        "Il cioccolato sciolto si ottiene mettendo cioccolato fondente in una pentola con acqua."
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+async def croissant(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🥐 *Ecco a te i croissant:*\n\n"
+        "» Croissant:\n"
+        "x1 Impasto per dolci › Tagliere › x2 Impasto piccolo per dolci\n"
+        "x4 Impasto piccolo per dolci > Banco da lavoro > x2 Croissant crudo\n"
+        "x4 Croissant crudo > Forno > x4 Croissant\n\n"
+
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+async def fragole(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🍓 *Ecco a te le fragole:*\n\n"
+        "» Fragole con panna:\n"
+        "x1 Fragola + x1 Panna › Banco da Lavoro › x3 Fragola con panna\n\n"
+        "» Fragole al cioccolato:\n"
+        "x3 Cacao (forse) > Pentola > x3 Cioccolato\n"
+        "x1 Fragola + x1 Cioccolato > Banco da Lavoro > x3 Fragola al cioccolato\n"
+
+    )
+
+    await update.message.reply_text(text, parse_mode="Markdown")
+
 
 async def macaron(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
@@ -341,7 +483,15 @@ app.add_handler(CommandHandler("nigiri", nigiri))
 app.add_handler(CommandHandler("hosomaki", hosomaki))
 app.add_handler(CommandHandler("sashimi", sashimi))
 app.add_handler(CommandHandler("tacos", tacos))
+app.add_handler(CommandHandler("temaki", temaki))
+app.add_handler(CommandHandler("anelli", anelli))
+app.add_handler(CommandHandler("insalate", insalate))
+app.add_handler(CommandHandler("pollo", pollo))
+app.add_handler(CommandHandler("cotoletta", cotoletta))
 app.add_handler(CommandHandler("torta", torta))
+app.add_handler(CommandHandler("pancake", pancake))
+app.add_handler(CommandHandler("croissant", croissant))
+app.add_handler(CommandHandler("fragole", fragole))
 app.add_handler(CommandHandler("macaron", macaron))
 app.add_handler(CommandHandler("culo", culo))
 app.add_handler(CommandHandler("gioca", gioca))
