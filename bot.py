@@ -6,9 +6,38 @@ from telegram.ext import CallbackQueryHandler
 import time
 import asyncio
 import os
+import sqlite3
 
 TOKEN = os.getenv("TOKEN")
 cooldowns = {}
+
+# Connessione al database
+DB_NAME = "database.db"
+
+conn = sqlite3.connect(DB_NAME, check_same_thread=False)
+cursor = conn.cursor()
+
+# Tabella utenti
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS utenti (
+    user_id INTEGER PRIMARY KEY,
+    ultima_apertura INTEGER
+)
+""")
+
+# Tabella collezione
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS collezione (
+    user_id INTEGER,
+    oggetto TEXT,
+    quantita INTEGER,
+    PRIMARY KEY (user_id, oggetto)
+)
+""")
+
+conn.commit()
+
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Ciao! Il bot funziona 😄")
