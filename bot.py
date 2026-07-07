@@ -572,7 +572,7 @@ async def apri(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ultima_apertura = result[0]
 
     # Cooldown di 12 ore
-    cooldown = 12 * 60 * 60
+    cooldown = 30 * 60 
 
     if now - ultima_apertura < cooldown:
         restante = cooldown - (now - ultima_apertura)
