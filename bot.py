@@ -10,7 +10,7 @@ import sqlite3
 
 TOKEN = os.getenv("TOKEN")
 cooldowns = {}
-
+#-----------------------INIZIO DB PER COLLEZIONE!
 # Connessione al database
 DB_NAME = "database.db"
 
@@ -37,7 +37,57 @@ CREATE TABLE IF NOT EXISTS collezione (
 
 conn.commit()
 
+PACK_ITEMS = [
+    {
+        "nome": "🥁 Tamburo di SamuGiovyPaoLeo",
+        "rarita": "Comune",
+        "peso": 30
+    },
+    {
+        "nome": "🌿 Bush di Angelo Bush",
+        "rarita": "Non comune",
+        "peso": 25
+    },
+    {
+        "nome": "🏝️ Maldive di Loris",
+        "rarita": "Non comune",
+        "peso": 25
+    },
+    {
+        "nome": "🍵 Matcha di Carla",
+        "rarita": "Raro",
+        "peso": 10
+    },
+    {
+        "nome": "🪵 Palo in culo di Giorgio",
+        "rarita": "Molto raro",
+        "peso": 5
+    },
+    {
+        "nome": "🦶 Piedino di Raffy",
+        "rarita": "Ultra raro",
+        "peso": 3
+    },
+    {
+        "nome": "⚽ Palla destra di Melo",
+        "rarita": "Leggendario",
+        "peso": 1
+    },
+    {
+        "nome": "⚽ Palla sinistra di Melo",
+        "rarita": "Leggendario",
+        "peso": 1
+    }
+]
 
+
+
+
+
+
+
+
+#-----------------------------------------INIZIO COMANDI BASE
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Ciao! Il bot funziona 😄")
@@ -498,6 +548,128 @@ async def bush(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(text, parse_mode="HTML")
 
+async def apri(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    now = int(time.time())
+
+    # Controlla se l'utente esiste
+    cursor.execute(
+        "SELECT ultima_apertura FROM utenti WHERE user_id = ?",
+        (user_id,)
+    )
+    result = cursor.fetchone()
+
+    # Se è il primo utilizzo
+    if result is None:
+        cursor.execute(
+            "INSERT INTO utenti (user_id, ultima_apertura) VALUES (?, ?)",
+            (user_id, 0)
+        )
+        conn.commit()
+        ultima_apertura = 0
+    else:
+        ultima_apertura = result[0]
+
+    # Cooldown di 12 ore
+    cooldown = 12 * 60 * 60
+
+    if now - ultima_apertura < cooldown:
+        restante = cooldown - (now - ultima_apertura)
+
+        ore = restante // 3600
+        minuti = (restante % 3600) // 60
+
+        await update.message.reply_text(
+            f"Hai già aperto un pacchetto.\n"
+            f"Potrai aprirne un altro tra {ore}h {minuti}m."
+        )
+        return
+
+    # Estrazione casuale
+    oggetto = random.choices(
+        PACK_ITEMS,
+        weights=[item["peso"] for item in PACK_ITEMS],
+        k=1
+    )[0]
+
+    # Aggiorna cooldown
+    cursor.execute(
+        "UPDATE utenti SET ultima_apertura = ? WHERE user_id = ?",
+        (now, user_id)
+    )
+
+    # Controlla se l'oggetto esiste già
+    cursor.execute(
+        """
+        SELECT quantita
+        FROM collezione
+        WHERE user_id = ? AND oggetto = ?
+        """,
+        (user_id, oggetto["nome"])
+    )
+
+    trovato = cursor.fetchone()
+
+    if trovato:
+        cursor.execute(
+            """
+            UPDATE collezione
+            SET quantita = quantita + 1
+            WHERE user_id = ? AND oggetto = ?
+            """,
+            (user_id, oggetto["nome"])
+        )
+    else:
+        cursor.execute(
+            """
+            INSERT INTO collezione(user_id, oggetto, quantita)
+            VALUES (?, ?, 1)
+            """,
+            (user_id, oggetto["nome"])
+        )
+
+    conn.commit()
+
+    await update.message.reply_text(
+        f"📦 Hai aperto il tuo pacchetto!\n\n"
+        f"Hai ottenuto:\n\n"
+        f"{oggetto['nome']}\n\n"
+        f"Rarità: {oggetto['rarita']}"
+    )
+
+
+
+async def collezione(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    cursor.execute("""
+        SELECT oggetto, quantita
+        FROM collezione
+        WHERE user_id = ?
+        ORDER BY quantita DESC
+    """, (user_id,))
+
+    risultati = cursor.fetchall()
+
+    if not risultati:
+        await update.message.reply_text(
+            "La tua collezione è vuota.\n\nApri un pacchetto con /apri!"
+        )
+        return
+
+    totale_oggetti = sum(qta for _, qta in risultati)
+    oggetti_unici = len(risultati)
+
+    testo = "═══════ COLLEZIONE ═══════\n\n"
+
+    for oggetto, quantita in risultati:
+        testo += f"{oggetto} ×{quantita}\n"
+
+    testo += "\n────────────────────\n\n"
+    testo += f"Oggetti unici: {oggetti_unici}/{len(PACK_ITEMS)}\n"
+    testo += f"Totale oggetti: {totale_oggetti}"
+
+    await update.message.reply_text(testo)
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
 app = Application.builder().token(TOKEN).build()
@@ -530,6 +702,8 @@ app.add_handler(CommandHandler("gioca", gioca))
 app.add_handler(CallbackQueryHandler(bottone_gioco))
 app.add_handler(CommandHandler("comandi", comandi))
 app.add_handler(CommandHandler("bush", bush))
+app.add_handler(CommandHandler("apri", apri))
+app.add_handler(CommandHandler("collezione", collezione))
 
 
 app.run_polling()
