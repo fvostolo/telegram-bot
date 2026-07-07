@@ -102,7 +102,7 @@ async def comandi(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "» /bush\n"
         "» /apri \n"
         "» /collezione"
-        "TEST"
+
     )
 
     await update.message.reply_text(text)
