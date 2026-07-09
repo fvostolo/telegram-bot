@@ -6,40 +6,51 @@ from telegram.ext import CallbackQueryHandler
 import time
 import asyncio
 import os
-import sqlite3
+import psycopg2
 
 TOKEN = os.getenv("TOKEN")
 cooldowns = {}
-#-----------------------INIZIO DB PER COLLEZIONE!
-# Connessione al database
-DB_NAME = "database.db"
+#-----------------------INIZIO DB PER COLLEZIONE! (PostgreSQL su Railway)
 
-conn = sqlite3.connect(DB_NAME, check_same_thread=False)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError(
+        "Variabile DATABASE_URL non trovata. Su Railway collega il servizio "
+        "PostgreSQL al bot e verifica che la variabile sia referenziata "
+        "correttamente nel servizio del bot."
+    )
+
+conn = psycopg2.connect(DATABASE_URL)
+conn.autocommit = True  # ogni query viene salvata subito, niente commit manuali
 cursor = conn.cursor()
 
 # Tabella utenti
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS utenti (
-    user_id INTEGER PRIMARY KEY,
-    ultima_apertura INTEGER
+    user_id BIGINT PRIMARY KEY,
+    ultima_apertura BIGINT
 )
 """)
 
 # Tabella collezione
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS collezione (
-    user_id INTEGER,
+    user_id BIGINT,
     oggetto TEXT,
     quantita INTEGER,
     PRIMARY KEY (user_id, oggetto)
 )
 """)
 
-conn.commit()
-
 PACK_ITEMS = [
     {
         "nome": "🥁 Tamburo di SamuGiovyPaoLeo",
+        "rarita": "Comune",
+        "peso": 30
+    },
+    {
+        "nome": "🍸 Alcool di Claudia Bez",
         "rarita": "Comune",
         "peso": 30
     },
@@ -54,7 +65,17 @@ PACK_ITEMS = [
         "peso": 25
     },
     {
+        "nome": "🥤 Monster di Samu Moto",
+        "rarita": "Non comune",
+        "peso": 25
+    },
+    {
         "nome": "🍵 Matcha di Carla",
+        "rarita": "Raro",
+        "peso": 10
+    },
+    {
+        "nome": "💸 Bushta Paga di Bush",
         "rarita": "Raro",
         "peso": 10
     },
@@ -66,7 +87,22 @@ PACK_ITEMS = [
     {
         "nome": "🦶 Piedino di Raffy",
         "rarita": "Ultra raro",
-        "peso": 3
+        "peso": 4
+    },
+    {
+        "nome": "🪑 Piedi del Tavolino di Gio Miu",
+        "rarita": "Ultra raro",
+        "peso": 4
+    },
+    {
+        "nome": "🎭 Sergio Ferrauto",
+        "rarita": "Epico",
+        "peso": 2
+    },
+    {
+        "nome": "🎩 Giulio Ferrauto",
+        "rarita": "Epico",
+        "peso": 2
     },
     {
         "nome": "⚽ Palla destra di Melo",
@@ -555,7 +591,7 @@ async def apri(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Controlla se l'utente esiste
     cursor.execute(
-        "SELECT ultima_apertura FROM utenti WHERE user_id = ?",
+        "SELECT ultima_apertura FROM utenti WHERE user_id = %s",
         (user_id,)
     )
     result = cursor.fetchone()
@@ -563,15 +599,14 @@ async def apri(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Se è il primo utilizzo
     if result is None:
         cursor.execute(
-            "INSERT INTO utenti (user_id, ultima_apertura) VALUES (?, ?)",
+            "INSERT INTO utenti (user_id, ultima_apertura) VALUES (%s, %s)",
             (user_id, 0)
         )
-        conn.commit()
         ultima_apertura = 0
     else:
         ultima_apertura = result[0]
 
-    # Cooldown di 12 ore
+    # Cooldown di 30 minuti
     cooldown = 30 * 60 
 
     if now - ultima_apertura < cooldown:
@@ -595,48 +630,37 @@ async def apri(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Aggiorna cooldown
     cursor.execute(
-        "UPDATE utenti SET ultima_apertura = ? WHERE user_id = ?",
+        "UPDATE utenti SET ultima_apertura = %s WHERE user_id = %s",
         (now, user_id)
     )
 
-    # Controlla se l'oggetto esiste già
+    # Aggiorna la collezione: inserisce l'oggetto, oppure incrementa la quantità se già posseduto
     cursor.execute(
         """
-        SELECT quantita
-        FROM collezione
-        WHERE user_id = ? AND oggetto = ?
+        INSERT INTO collezione (user_id, oggetto, quantita)
+        VALUES (%s, %s, 1)
+        ON CONFLICT (user_id, oggetto)
+        DO UPDATE SET quantita = collezione.quantita + 1
         """,
         (user_id, oggetto["nome"])
     )
 
-    trovato = cursor.fetchone()
-
-    if trovato:
-        cursor.execute(
-            """
-            UPDATE collezione
-            SET quantita = quantita + 1
-            WHERE user_id = ? AND oggetto = ?
-            """,
-            (user_id, oggetto["nome"])
+    if oggetto["rarita"] == "Leggendario":
+        testo = (
+            f"✨🌟✨ *LEGGENDARIO!* ✨🌟✨\n\n"
+            f"📦 Il pacchetto si apre e...\n\n"
+            f"🎇 *{oggetto['nome']}* 🎇\n\n"
+            f"⭐ Rarità: *{oggetto['rarita']}* ⭐"
         )
     else:
-        cursor.execute(
-            """
-            INSERT INTO collezione(user_id, oggetto, quantita)
-            VALUES (?, ?, 1)
-            """,
-            (user_id, oggetto["nome"])
+        testo = (
+            f"📦 Hai aperto il tuo pacchetto!\n\n"
+            f"Hai ottenuto:\n\n"
+            f"{oggetto['nome']}\n\n"
+            f"Rarità: {oggetto['rarita']}"
         )
 
-    conn.commit()
-
-    await update.message.reply_text(
-        f"📦 Hai aperto il tuo pacchetto!\n\n"
-        f"Hai ottenuto:\n\n"
-        f"{oggetto['nome']}\n\n"
-        f"Rarità: {oggetto['rarita']}"
-    )
+    await update.message.reply_text(testo, parse_mode="Markdown")
 
 
 
@@ -646,7 +670,7 @@ async def collezione(update: Update, context: ContextTypes.DEFAULT_TYPE):
     cursor.execute("""
         SELECT oggetto, quantita
         FROM collezione
-        WHERE user_id = ?
+        WHERE user_id = %s
         ORDER BY quantita DESC
     """, (user_id,))
 
@@ -671,6 +695,41 @@ async def collezione(update: Update, context: ContextTypes.DEFAULT_TYPE):
     testo += f"Totale oggetti: {totale_oggetti}"
 
     await update.message.reply_text(testo)
+
+
+FRASI_UALLERA = [
+    "{mention} ha visto dal vivo i solchi in Via Etnea... da far paura.",
+    "Attento! Potresti sprofondare! Melo è appena stato lì!",
+    "Palio? Etna Comics? Ah, per visitarli, devi scendere di qualche km sottoterra..."
+]
+
+async def uallera(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    cursor.execute(
+        """
+        SELECT oggetto FROM collezione
+        WHERE user_id = %s
+        AND oggetto IN (%s, %s)
+        AND quantita > 0
+        """,
+        (user_id, "⚽ Palla destra di Melo", "⚽ Palla sinistra di Melo")
+    )
+
+    posseduti = {row[0] for row in cursor.fetchall()}
+
+    if not {"⚽ Palla destra di Melo", "⚽ Palla sinistra di Melo"}.issubset(posseduti):
+        await update.message.reply_text(
+            "❌ Devi possedere sia la Palla destra che la Palla sinistra di Melo per usare /uallera!\n\n"
+            "Continua ad aprire pacchetti con /apri 📦"
+        )
+        return
+
+    frase = random.choice(FRASI_UALLERA)
+    mention = update.effective_user.mention_html()
+    testo = frase.format(mention=mention)
+
+    await update.message.reply_text(testo, parse_mode="HTML")
 
 # 👇 QUESTO DEVE STARE FUORI DA TUTTO
 app = Application.builder().token(TOKEN).build()
@@ -705,6 +764,7 @@ app.add_handler(CommandHandler("comandi", comandi))
 app.add_handler(CommandHandler("bush", bush))
 app.add_handler(CommandHandler("apri", apri))
 app.add_handler(CommandHandler("collezione", collezione))
+app.add_handler(CommandHandler("uallera", uallera))
 
 
 app.run_polling()
