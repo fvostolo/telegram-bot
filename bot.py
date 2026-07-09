@@ -116,6 +116,20 @@ PACK_ITEMS = [
     }
 ]
 
+# Sigle delle rarità, usate in /collezione
+RARITA_SIGLE = {
+    "Comune": "C",
+    "Non comune": "NC",
+    "Raro": "R",
+    "Molto raro": "MR",
+    "Ultra raro": "UR",
+    "Epico": "E",
+    "Leggendario": "L"
+}
+
+# Lookup oggetto -> rarità, costruito automaticamente da PACK_ITEMS
+OGGETTO_RARITA = {item["nome"]: item["rarita"] for item in PACK_ITEMS}
+
 
 
 
@@ -688,7 +702,9 @@ async def collezione(update: Update, context: ContextTypes.DEFAULT_TYPE):
     testo = "═══════ COLLEZIONE ═══════\n\n"
 
     for oggetto, quantita in risultati:
-        testo += f"{oggetto} ×{quantita}\n"
+        rarita = OGGETTO_RARITA.get(oggetto, "?")
+        sigla = RARITA_SIGLE.get(rarita, "?")
+        testo += f"{oggetto} [{sigla}] ×{quantita}\n"
 
     testo += "\n────────────────────\n\n"
     testo += f"Oggetti unici: {oggetti_unici}/{len(PACK_ITEMS)}\n"
