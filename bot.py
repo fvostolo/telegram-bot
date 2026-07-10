@@ -728,11 +728,10 @@ async def collezione(update: Update, context: ContextTypes.DEFAULT_TYPE):
             continue  # categoria vuota, non la mostro
 
         oggetti_gruppo.sort(key=lambda x: x[1], reverse=True)
-        sigla = RARITA_SIGLE.get(rarita, "?")
 
         testo += f"\n──── *{RARITA_PLURALE[rarita]}* ────\n"
         for oggetto, quantita in oggetti_gruppo:
-            testo += f"{oggetto} [{sigla}] ×{quantita}\n"
+            testo += f"{oggetto} ×{quantita}\n"
 
     testo += "\n────────────────────\n"
     testo += f"Oggetti unici: {oggetti_unici}/{len(PACK_ITEMS)}\n"
@@ -874,24 +873,18 @@ async def scambio_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             (scambio["counterpart_id"],)
         )
         counterpart_items = cursor.fetchall()
-
-        if not counterpart_items:
-            del scambi_in_corso[trade_id]
-            await query.answer()
-            await query.edit_message_text("L'altra persona non ha ancora oggetti da scambiare.")
-            return
-
         scambio["counterpart_items"] = counterpart_items
 
         keyboard = [
             [InlineKeyboardButton(f"{nome} ×{qta}", callback_data=f"tr_pick2_{trade_id}_{i}")]
             for i, (nome, qta) in enumerate(counterpart_items)
         ]
+        keyboard.append([InlineKeyboardButton("🎁 Regala (niente in cambio)", callback_data=f"tr_gift_{trade_id}")])
         keyboard.append([InlineKeyboardButton("❌ Annulla", callback_data=f"tr_cancel_{trade_id}")])
 
         await query.answer()
         await query.edit_message_text(
-            f"Hai scelto: {nome_oggetto}\n\nOra scegli cosa vuoi ricevere in cambio:",
+            f"Hai scelto: {nome_oggetto}\n\nOra scegli cosa vuoi ricevere in cambio (oppure regalalo):",
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
         return
@@ -930,6 +923,37 @@ async def scambio_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(testo, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
         return
 
+    # --- Step 2 bis: il proponente sceglie di regalare, senza chiedere nulla in cambio ---
+    if data.startswith("tr_gift_"):
+        trade_id = data[len("tr_gift_"):]
+
+        scambio = scambi_in_corso.get(trade_id)
+        if not scambio:
+            await query.answer("Scambio scaduto o non valido.", show_alert=True)
+            return
+        if query.from_user.id != scambio["proposer_id"]:
+            await query.answer("Non è il tuo scambio.", show_alert=True)
+            return
+
+        scambio["suo_oggetto"] = None
+
+        keyboard = [[
+            InlineKeyboardButton("✅ Accetta", callback_data=f"tr_yes_{trade_id}"),
+            InlineKeyboardButton("❌ Rifiuta", callback_data=f"tr_no_{trade_id}")
+        ]]
+
+        testo = (
+            f"🎁 <b>Regalo in arrivo</b>\n\n"
+            f"{scambio['proposer_mention']} vuole regalarti:\n"
+            f"➡️ {scambio['mio_oggetto']}\n\n"
+            f"Niente in cambio!\n\n"
+            f"{scambio['counterpart_mention']}, accetti?"
+        )
+
+        await query.answer()
+        await query.edit_message_text(testo, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(keyboard))
+        return
+
     # --- Step 3: risposta della controparte ---
     if data.startswith("tr_yes_") or data.startswith("tr_no_"):
         accetta = data.startswith("tr_yes_")
@@ -953,27 +977,36 @@ async def scambio_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         proposer_id = scambio["proposer_id"]
         counterpart_id = scambio["counterpart_id"]
         mio_oggetto = scambio["mio_oggetto"]
-        suo_oggetto = scambio["suo_oggetto"]
+        suo_oggetto = scambio["suo_oggetto"]  # None se è un regalo
 
-        # Verifica finale: entrambi possiedono ancora davvero gli oggetti concordati
+        # Verifica finale: il proponente possiede ancora davvero l'oggetto offerto
         cursor.execute(
             "SELECT quantita FROM collezione WHERE user_id = %s AND oggetto = %s",
             (proposer_id, mio_oggetto)
         )
         row_proposer = cursor.fetchone()
 
-        cursor.execute(
-            "SELECT quantita FROM collezione WHERE user_id = %s AND oggetto = %s",
-            (counterpart_id, suo_oggetto)
-        )
-        row_counterpart = cursor.fetchone()
-
-        if not row_proposer or row_proposer[0] < 1 or not row_counterpart or row_counterpart[0] < 1:
+        if not row_proposer or row_proposer[0] < 1:
             del scambi_in_corso[trade_id]
             await query.edit_message_text(
-                "⚠️ Scambio non più valido: uno dei due oggetti non è più disponibile."
+                "⚠️ Scambio non più valido: l'oggetto offerto non è più disponibile."
             )
             return
+
+        row_counterpart = None
+        if suo_oggetto is not None:
+            cursor.execute(
+                "SELECT quantita FROM collezione WHERE user_id = %s AND oggetto = %s",
+                (counterpart_id, suo_oggetto)
+            )
+            row_counterpart = cursor.fetchone()
+
+            if not row_counterpart or row_counterpart[0] < 1:
+                del scambi_in_corso[trade_id]
+                await query.edit_message_text(
+                    "⚠️ Scambio non più valido: l'oggetto richiesto non è più disponibile."
+                )
+                return
 
         # Tolgo l'oggetto al proponente
         if row_proposer[0] == 1:
@@ -987,19 +1020,20 @@ async def scambio_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 (proposer_id, mio_oggetto)
             )
 
-        # Tolgo l'oggetto alla controparte
-        if row_counterpart[0] == 1:
-            cursor.execute(
-                "DELETE FROM collezione WHERE user_id = %s AND oggetto = %s",
-                (counterpart_id, suo_oggetto)
-            )
-        else:
-            cursor.execute(
-                "UPDATE collezione SET quantita = quantita - 1 WHERE user_id = %s AND oggetto = %s",
-                (counterpart_id, suo_oggetto)
-            )
+        # Tolgo l'oggetto alla controparte (solo se non è un regalo)
+        if suo_oggetto is not None:
+            if row_counterpart[0] == 1:
+                cursor.execute(
+                    "DELETE FROM collezione WHERE user_id = %s AND oggetto = %s",
+                    (counterpart_id, suo_oggetto)
+                )
+            else:
+                cursor.execute(
+                    "UPDATE collezione SET quantita = quantita - 1 WHERE user_id = %s AND oggetto = %s",
+                    (counterpart_id, suo_oggetto)
+                )
 
-        # Do l'oggetto del proponente alla controparte, e viceversa
+        # Do l'oggetto del proponente alla controparte
         cursor.execute(
             """
             INSERT INTO collezione (user_id, oggetto, quantita)
@@ -1009,24 +1043,35 @@ async def scambio_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             """,
             (counterpart_id, mio_oggetto)
         )
-        cursor.execute(
-            """
-            INSERT INTO collezione (user_id, oggetto, quantita)
-            VALUES (%s, %s, 1)
-            ON CONFLICT (user_id, oggetto)
-            DO UPDATE SET quantita = collezione.quantita + 1
-            """,
-            (proposer_id, suo_oggetto)
-        )
+
+        # Do l'oggetto della controparte al proponente (solo se non è un regalo)
+        if suo_oggetto is not None:
+            cursor.execute(
+                """
+                INSERT INTO collezione (user_id, oggetto, quantita)
+                VALUES (%s, %s, 1)
+                ON CONFLICT (user_id, oggetto)
+                DO UPDATE SET quantita = collezione.quantita + 1
+                """,
+                (proposer_id, suo_oggetto)
+            )
 
         del scambi_in_corso[trade_id]
 
-        await query.edit_message_text(
-            f"✅ <b>Scambio completato!</b>\n\n"
-            f"{scambio['proposer_mention']} ha dato: {mio_oggetto}\n"
-            f"{scambio['counterpart_mention']} ha dato: {suo_oggetto}",
-            parse_mode="HTML"
-        )
+        if suo_oggetto is not None:
+            testo_finale = (
+                f"✅ <b>Scambio completato!</b>\n\n"
+                f"{scambio['proposer_mention']} ha dato: {mio_oggetto}\n"
+                f"{scambio['counterpart_mention']} ha dato: {suo_oggetto}"
+            )
+        else:
+            testo_finale = (
+                f"🎁 <b>Regalo consegnato!</b>\n\n"
+                f"{scambio['proposer_mention']} ha regalato {mio_oggetto} a "
+                f"{scambio['counterpart_mention']}"
+            )
+
+        await query.edit_message_text(testo_finale, parse_mode="HTML")
         return
 
 
