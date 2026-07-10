@@ -97,12 +97,12 @@ PACK_ITEMS = [
         "peso": 4
     },
     {
-        "nome": "🎭 Sergio Ferrauto",
+        "nome": "👯 Sergio Ferrauto",
         "rarita": "Epico",
         "peso": 2
     },
     {
-        "nome": "🎩 Giulio Ferrauto",
+        "nome": "👯 Giulio Ferrauto",
         "rarita": "Epico",
         "peso": 2
     },
