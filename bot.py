@@ -45,6 +45,20 @@ CREATE TABLE IF NOT EXISTS collezione (
 )
 """)
 
+# Colonne per il sistema del Pacchetto Raro (ogni 100 oggetti trovati)
+cursor.execute("ALTER TABLE utenti ADD COLUMN IF NOT EXISTS oggetti_totali BIGINT DEFAULT 0")
+cursor.execute("ALTER TABLE utenti ADD COLUMN IF NOT EXISTS pacchetti_rari INTEGER DEFAULT 0")
+
+# Ripristina il conteggio per chi aveva già una collezione prima di questa funzione
+# (tocca solo chi è ancora a 0, quindi è sicuro rieseguirlo ad ogni avvio)
+cursor.execute("""
+    UPDATE utenti u
+    SET oggetti_totali = COALESCE(
+        (SELECT SUM(quantita) FROM collezione c WHERE c.user_id = u.user_id), 0
+    )
+    WHERE u.oggetti_totali = 0
+""")
+
 PACK_ITEMS = [
     {
         "nome": "🥁 Tamburo di SamuGiovyPaoLeo",
@@ -145,6 +159,13 @@ RARITA_PLURALE = {
     "Epico": "Epici",
     "Leggendario": "Leggendari"
 }
+
+# Ogni tanti oggetti totali trovati, si sblocca un Pacchetto Raro
+SOGLIA_PACCHETTO_RARO = 100
+
+# Oggetti idonei al Pacchetto Raro: rarità >= "Raro" (Raro, Molto raro, Ultra raro, Epico, Leggendario)
+RARITA_APRIRARO = set(RARITA_ORDINE[RARITA_ORDINE.index("Raro"):])
+OGGETTI_APRIRARO = [item for item in PACK_ITEMS if item["rarita"] in RARITA_APRIRARO]
 
 
 
@@ -692,6 +713,97 @@ async def apri(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(testo, parse_mode="Markdown")
 
+    await registra_oggetto_trovato(update, user_id)
+
+
+async def registra_oggetto_trovato(update: Update, user_id: int):
+    """Incrementa il conteggio totale di oggetti trovati dall'utente (indipendente
+    dai trade/regali) e, se supera una nuova soglia, assegna un Pacchetto Raro
+    e lo notifica subito."""
+    cursor.execute(
+        "SELECT oggetti_totali FROM utenti WHERE user_id = %s",
+        (user_id,)
+    )
+    row = cursor.fetchone()
+    vecchio_totale = row[0] if row else 0
+    nuovo_totale = vecchio_totale + 1
+
+    cursor.execute(
+        "UPDATE utenti SET oggetti_totali = %s WHERE user_id = %s",
+        (nuovo_totale, user_id)
+    )
+
+    soglie_raggiunte = nuovo_totale // SOGLIA_PACCHETTO_RARO - vecchio_totale // SOGLIA_PACCHETTO_RARO
+
+    if soglie_raggiunte > 0:
+        cursor.execute(
+            "UPDATE utenti SET pacchetti_rari = pacchetti_rari + %s WHERE user_id = %s",
+            (soglie_raggiunte, user_id)
+        )
+
+        soglia = (vecchio_totale // SOGLIA_PACCHETTO_RARO + 1) * SOGLIA_PACCHETTO_RARO
+        mention = update.effective_user.mention_html()
+
+        await update.message.reply_text(
+            f"🎉 {mention}, hai raggiunto i {soglia} oggetti!\n"
+            f"Ora puoi aprire il tuo pacchetto Raro, usando il comando /apriraro",
+            parse_mode="HTML"
+        )
+
+
+async def apriraro(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+
+    cursor.execute(
+        "SELECT pacchetti_rari FROM utenti WHERE user_id = %s",
+        (user_id,)
+    )
+    row = cursor.fetchone()
+
+    # Se non ha nessun Pacchetto Raro disponibile, il bot resta in silenzio
+    if not row or row[0] < 1:
+        return
+
+    cursor.execute(
+        "UPDATE utenti SET pacchetti_rari = pacchetti_rari - 1 WHERE user_id = %s",
+        (user_id,)
+    )
+
+    # Estrazione casuale, solo tra gli oggetti di rarità >= Raro
+    oggetto = random.choices(
+        OGGETTI_APRIRARO,
+        weights=[item["peso"] for item in OGGETTI_APRIRARO],
+        k=1
+    )[0]
+
+    cursor.execute(
+        """
+        INSERT INTO collezione (user_id, oggetto, quantita)
+        VALUES (%s, %s, 1)
+        ON CONFLICT (user_id, oggetto)
+        DO UPDATE SET quantita = collezione.quantita + 1
+        """,
+        (user_id, oggetto["nome"])
+    )
+
+    if oggetto["rarita"] == "Leggendario":
+        testo = (
+            f"💎✨💎 *PACCHETTO RARO — LEGGENDARIO!* 💎✨💎\n\n"
+            f"🎇 *{oggetto['nome']}* 🎇\n\n"
+            f"⭐ Rarità: *{oggetto['rarita']}* ⭐"
+        )
+    else:
+        testo = (
+            f"💎 *Pacchetto Raro aperto!*\n\n"
+            f"Hai ottenuto:\n\n"
+            f"{oggetto['nome']}\n\n"
+            f"Rarità: {oggetto['rarita']}"
+        )
+
+    await update.message.reply_text(testo, parse_mode="Markdown")
+
+    await registra_oggetto_trovato(update, user_id)
+
 
 
 async def collezione(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1107,6 +1219,7 @@ app.add_handler(CallbackQueryHandler(bottone_gioco, pattern="^gioco$"))
 app.add_handler(CommandHandler("comandi", comandi))
 app.add_handler(CommandHandler("bush", bush))
 app.add_handler(CommandHandler("apri", apri))
+app.add_handler(CommandHandler("apriraro", apriraro))
 app.add_handler(CommandHandler("collezione", collezione))
 app.add_handler(CommandHandler("uallera", uallera))
 app.add_handler(CommandHandler("scambia", scambia))
