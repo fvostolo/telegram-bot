@@ -611,13 +611,24 @@ async def bottone_gioco(update: Update, context: ContextTypes.DEFAULT_TYPE):
         premio = "🍱 1 stack di cibo fvesco"
         rarita = "Non comune"
 
-    elif roll <= 98:
+    elif roll <= 97:
         premio = "👑 1 ingresso della manager sul server"
         rarita = "Raro"
 
     else:
-        premio = "🎟 1 fiches (offerta da Fvostolo)"
         rarita = "Leggendario 💎"
+        if random.random() < 0.5:
+            premio = "🎟 1 fiches (offerta da Fvostolo)"
+        else:
+            premio = "🎁 1 Pacchetto Raro (usa /apriraro!)"
+            cursor.execute(
+                """
+                INSERT INTO utenti (user_id, ultima_apertura, oggetti_totali, pacchetti_rari)
+                VALUES (%s, 0, 0, 1)
+                ON CONFLICT (user_id) DO UPDATE SET pacchetti_rari = utenti.pacchetti_rari + 1
+                """,
+                (user_id,)
+            )
 
     await msg.edit_text(
         f"🎰 RISULTATO FINALE\n\n"
